@@ -1,6 +1,6 @@
+import React from 'react';
 import CurrencyInput from 'react-currency-input-field';
 import valid from 'card-validator';
-import PaymentIcon from 'react-payment-icons';
 
 export default function Form({ formData, handleInput, formattedCardNumber, handleSubmit, formErrors }) {
     const { name, month, year, cvc, amount } = formData;
@@ -9,10 +9,14 @@ export default function Form({ formData, handleInput, formattedCardNumber, handl
 
     const isCardValid = cardValidation.isPotentiallyValid || cardValidation.isValid;
     const cardType = cardValidation.card ? cardValidation.card.type : null;
-    const cardName = cardValidation.card ? cardValidation.card.niceType: null;
+    const cardName = cardValidation.card ? cardValidation.card.niceType : null;
+
     return (
-        <form aria-label="credit card form"
-              className="form mt-[91px] lg:mt-[111px] flex flex-col w-[327px] h-[348px] lg:w-[381px] lg:h-[372px] lg:ml-[349px] lg:mb-[90px]">
+        <form
+            aria-label="credit card form"
+            className="form mt-[91px] lg:mt-[111px] flex flex-col w-[327px] h-[348px] lg:w-[381px] lg:h-[372px] lg:ml-[349px] lg:mb-[90px]"
+            onSubmit={handleSubmit} // Add this to handle form submission
+        >
             <label htmlFor="name" className="form--name_label">Tên chủ thẻ</label>
             <input
                 className="form--name_input lg:w-[381px] min-h-[45px]"
@@ -37,11 +41,10 @@ export default function Form({ formData, handleInput, formattedCardNumber, handl
                     placeholder='e.g. 1234 5678 9123 0000'
                     maxLength={19}
                 />
-                {isCardValid && cardType && (
-                    <div className={"flex mt-5  items-center gap-10"}>
-                    <PaymentIcon id={cardType}
-                                 className="form--card_icon  w-[50px] "/>
-                        { cardName}
+                {isCardValid && cardType && formattedCardNumber.length >= 16 && (
+                    <div className="flex mt-5 items-center gap-10">
+                        Loại card: {""}
+                         {cardName}
                     </div>
                 )}
             </div>
@@ -54,8 +57,8 @@ export default function Form({ formData, handleInput, formattedCardNumber, handl
                     currency: 'VND'
                 }}
                 value={amount}
-                onValueChange={(value, name) => handleInput({target: {value, name}})}
-                name={'amount'}
+                onValueChange={(value, name) => handleInput({ target: { value, name } })}
+                name='amount'
                 className="form--card_number_input lg:w-[381px] min-h-[45px]"
             />
             <div className="form--error text-error-color mt-2 text-xs leading-3">{formErrors.amount}</div>
@@ -72,8 +75,7 @@ export default function Form({ formData, handleInput, formattedCardNumber, handl
                         placeholder='MM'
                         maxLength={2}
                     />
-                    <div
-                        className="form--error text-error-color mt-2 text-xs leading-3 w-[84px]">{formErrors.month}</div>
+                    <div className="form--error text-error-color mt-2 text-xs leading-3 w-[84px]">{formErrors.month}</div>
                 </div>
 
                 <div className="form--month_container mr-[11px] lg:mr-[20px]">
@@ -107,9 +109,12 @@ export default function Form({ formData, handleInput, formattedCardNumber, handl
                 </div>
             </div>
 
-            <button onClick={handleSubmit}
-                    className='form--submit_btn bg-second-color text-main-color w-[327px] min-h-[53px] rounded-lg lg:w-[381px]'
-                    aria-label="confirm button">Thanh toan
+            <button
+                type="submit" // Ensure the button is a submit type
+                className='form--submit_btn bg-second-color text-main-color w-[327px] min-h-[53px] rounded-lg lg:w-[381px]'
+                aria-label="confirm button"
+            >
+                Thanh toan
             </button>
         </form>
     );
