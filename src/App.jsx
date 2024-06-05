@@ -1,55 +1,56 @@
-import { useState, useEffect } from 'react'
-import './App.css'
-import Valid from 'card-validator'
-import Head from './Head'
-import Form from './Form'
-import FormThankYou from './FormThankYou'
+import { useState, useEffect } from 'react';
+import './App.css';
+import Valid from 'card-validator';
+import Head from './Head';
+import Form from './Form';
+import FormThankYou from './FormThankYou';
 import User from "./User";
-import {jwtDecode} from "jwt-decode";
+import useAuth from './useAuth';
 
 function App() {
   const [formData, setFormData] = useState({
     cardNumber: '',
     month: '',
-    year:'',
+    year: '',
     cvc: '',
     amount: 0,
     name: ''
-  })
+  });
 
   const [formErrors, setFormErrors] = useState({
     cardNumber: '',
     month: '',
-    year:'',
+    year: '',
     cvc: '',
     amount: '',
     name: ''
-})
-  const [formattedCardNumber, setFormattedCardNumber] = useState('')
-  const [formSubmitted, setFormSubmitted] = useState(false)
-// code I'm proud of *** thank you stack overflow!! ***
+  });
+
+  const [formattedCardNumber, setFormattedCardNumber] = useState('');
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const id = useAuth();
+
   useEffect(() => {
     setFormattedCardNumber(prevFormat => {
-         prevFormat = formData.cardNumber.replace(/\s?/g, '').replace(/(\d{4})/g, '$1 ').trim()
-        return prevFormat
-    })
-  },[formData.cardNumber])
+      return formData.cardNumber.replace(/\s?/g, '').replace(/(\d{4})/g, '$1 ').trim();
+    });
+  }, [formData.cardNumber]);
 
-  function containsOnlyNumbers(str) {
-    const removedSpaces = str.replace(/\s/g, '')
+  const containsOnlyNumbers = (str) => {
+    const removedSpaces = str.replace(/\s/g, '');
     return /^\d+$/.test(removedSpaces);
-}
-  const token = localStorage.getItem('token');
-  const decodedToken = jwtDecode(token);
+  };
+
   const validate = (values) => {
     const errors = {};
-    const regexCardNumber = containsOnlyNumbers(values.cardNumber)
-    const regexMonth = containsOnlyNumbers(values.month)
-    const regexYear = containsOnlyNumbers(values.year)
-    const regexCvc = containsOnlyNumbers(values.cvc)
-    const IsNumberLargeThanZero = values.amount > 0
+    const regexCardNumber = containsOnlyNumbers(values.cardNumber);
+    const regexMonth = containsOnlyNumbers(values.month);
+    const regexYear = containsOnlyNumbers(values.year);
+    const regexCvc = containsOnlyNumbers(values.cvc);
+    const isNumberLargeThanZero = values.amount > 0;
     const currentYear = new Date().getFullYear();
     const lastTwoDigitsOfYear = currentYear.toString().slice(-2);
+
     if (!values.name) {
       errors.name = "Tên không được để trống";
     }
@@ -58,38 +59,35 @@ function App() {
     } else if (!regexCardNumber) {
       errors.cardNumber = "Sai định dạng, chỉ chứa số";
     }
-
     if (!values.month) {
       errors.month = "Tháng không được để trống";
-    } else if(!regexMonth) {
-      errors.month = "Sai định dạng, chỉ chứa số"
-    } else if(values.month > 12) {
-      errors.month = "Tháng phải nhỏ hơn hoặc bằng 12"
+    } else if (!regexMonth) {
+      errors.month = "Sai định dạng, chỉ chứa số";
+    } else if (values.month > 12) {
+      errors.month = "Tháng phải nhỏ hơn hoặc bằng 12";
     }
     if (!values.year) {
-      errors.year= "Không được để trống năm";
-    } else if(!regexYear) {
-      errors.year = "Sai định dạng, chỉ chứa số"
+      errors.year = "Không được để trống năm";
+    } else if (!regexYear) {
+      errors.year = "Sai định dạng, chỉ chứa số";
     } else if (values.year < lastTwoDigitsOfYear) {
-      errors.year = "Năm phải lớn hơn hoặc bằng năm hiện tại"
+      errors.year = "Năm phải lớn hơn hoặc bằng năm hiện tại";
     }
     if (!values.cvc) {
-      errors.cvc = "Không được để trống cvc"
-    } else if(!regexCvc) {
-      errors.cvc = " Sai định dạng, chỉ chứa số"
+      errors.cvc = "Không được để trống cvc";
+    } else if (!regexCvc) {
+      errors.cvc = " Sai định dạng, chỉ chứa số";
     }
-
-    if (!IsNumberLargeThanZero) {
-      errors.amount = "Không được thanh toán số tiền nhỏ hơn 0"
+    if (!isNumberLargeThanZero) {
+      errors.amount = "Không được thanh toán số tiền nhỏ hơn 0";
     }
-
-    if (Valid.number(values.cardNumber).isValid === false && Valid.number(values.cardNumber).isPotentiallyValid === false){
-        errors.cardNumber = "Số thẻ không hợp lệ"
+    if (Valid.number(values.cardNumber).isValid === false && Valid.number(values.cardNumber).isPotentiallyValid === false) {
+      errors.cardNumber = "Số thẻ không hợp lệ";
     }
     return errors;
   };
 
-  const noErrors = Object.keys(formErrors).length === 0
+  const noErrors = Object.keys(formErrors).length === 0;
 
   const handleInput = (e) => {
     const { name, value } = e.target;
@@ -103,42 +101,40 @@ function App() {
     setFormErrors({
       cardNumber: '',
       month: '',
-      year:'',
+      year: '',
       cvc: '',
       amount: '',
       name: ''
     });
-  }
-
+  };
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    setFormErrors(validate(formData))
-    setFormSubmitted(true)
-  }
+    e.preventDefault();
+    setFormErrors(validate(formData));
+    setFormSubmitted(true);
+  };
+
   return (
-    <div className="App h-full w-full flex flex-col items-center lg:flex-row ">
-      <Head
-      formattedCardNumber={formattedCardNumber}
-      formData={formData}
-      />
-      <User id={decodedToken.id}/>
-      { !noErrors || !formSubmitted ?
-      <Form
-        formSubmitted={formSubmitted}
-        handleSubmit={handleSubmit}
-        formattedCardNumber={formattedCardNumber}
-        formData={formData}
-        handleInput={handleInput}
-        formErrors={formErrors}
-      />
-     :
-
-      <FormThankYou />
-
-     }
-    </div>
-)
+      <div className="App h-full w-full flex flex-col items-center lg:flex-row">
+        <Head
+            formattedCardNumber={formattedCardNumber}
+            formData={formData}
+        />
+        <User id={id} />
+        { !noErrors || !formSubmitted ?
+            <Form
+                formSubmitted={formSubmitted}
+                handleSubmit={handleSubmit}
+                formattedCardNumber={formattedCardNumber}
+                formData={formData}
+                handleInput={handleInput}
+                formErrors={formErrors}
+            />
+            :
+            <FormThankYou />
+        }
+      </div>
+  );
 }
 
-export default App
+export default App;
