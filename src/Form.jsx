@@ -10,7 +10,6 @@ export default function Form({ formData, handleInput, formattedCardNumber, handl
     const isCardValid = cardValidation.isPotentiallyValid || cardValidation.isValid;
     const cardType = cardValidation.card ? cardValidation.card.type : null;
     const cardName = cardValidation.card ? cardValidation.card.niceType : null;
-
     return (
         <form
             aria-label="credit card form"

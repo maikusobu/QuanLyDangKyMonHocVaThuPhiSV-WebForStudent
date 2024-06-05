@@ -4,6 +4,9 @@ import Valid from 'card-validator'
 import Head from './Head'
 import Form from './Form'
 import FormThankYou from './FormThankYou'
+import User from "./User";
+import {jwtDecode} from "jwt-decode";
+
 function App() {
   const [formData, setFormData] = useState({
     cardNumber: '',
@@ -36,6 +39,8 @@ function App() {
     const removedSpaces = str.replace(/\s/g, '')
     return /^\d+$/.test(removedSpaces);
 }
+  const token = localStorage.getItem('token');
+  const decodedToken = jwtDecode(token);
   const validate = (values) => {
     const errors = {};
     const regexCardNumber = containsOnlyNumbers(values.cardNumber)
@@ -46,46 +51,44 @@ function App() {
     const currentYear = new Date().getFullYear();
     const lastTwoDigitsOfYear = currentYear.toString().slice(-2);
     if (!values.name) {
-      errors.name = "Name can't be blank";
+      errors.name = "Tên không được để trống";
     }
     if (!values.cardNumber) {
-      errors.cardNumber = "Card number can't be blank";
+      errors.cardNumber = "Số thẻ không được để trống";
     } else if (!regexCardNumber) {
-      errors.cardNumber = "Wrong format, numbers only";
-    } else if (values.cardNumber.length !== 19){
-      errors.cardNumber = "Card number length must be 16"
+      errors.cardNumber = "Sai định dạng, chỉ chứa số";
     }
 
     if (!values.month) {
-      errors.month = "Can't be blank";
+      errors.month = "Tháng không được để trống";
     } else if(!regexMonth) {
-      errors.month = "Wrong format, numbers only"
+      errors.month = "Sai định dạng, chỉ chứa số"
     } else if(values.month > 12) {
-      errors.month = "Must be less then 12"
+      errors.month = "Tháng phải nhỏ hơn hoặc bằng 12"
     }
     if (!values.year) {
-      errors.password = "Can't be blank";
+      errors.year= "Không được để trống năm";
     } else if(!regexYear) {
-      errors.year = "Wrong format, numbers only"
+      errors.year = "Sai định dạng, chỉ chứa số"
     } else if (values.year < lastTwoDigitsOfYear) {
-      errors.year = "year can't be less then current year"
+      errors.year = "Năm phải lớn hơn hoặc bằng năm hiện tại"
     }
     if (!values.cvc) {
-      errors.cvc = "Can't be blank"
+      errors.cvc = "Không được để trống cvc"
     } else if(!regexCvc) {
-      errors.cvc = "Wrong format, numbers only"
+      errors.cvc = " Sai định dạng, chỉ chứa số"
     }
 
     if (!IsNumberLargeThanZero) {
-      errors.amount = "Không được thanh toán với 0"
+      errors.amount = "Không được thanh toán số tiền nhỏ hơn 0"
     }
 
     if (Valid.number(values.cardNumber).isValid === false && Valid.number(values.cardNumber).isPotentiallyValid === false){
-        errors.cardNumber = "Card number is invalid"
+        errors.cardNumber = "Số thẻ không hợp lệ"
     }
     return errors;
   };
-  
+
   const noErrors = Object.keys(formErrors).length === 0
 
   const handleInput = (e) => {
@@ -115,10 +118,11 @@ function App() {
   }
   return (
     <div className="App h-full w-full flex flex-col items-center lg:flex-row ">
-      <Head 
+      <Head
       formattedCardNumber={formattedCardNumber}
       formData={formData}
       />
+      <User id={decodedToken.id}/>
       { !noErrors || !formSubmitted ?
       <Form
         formSubmitted={formSubmitted}
@@ -129,9 +133,9 @@ function App() {
         formErrors={formErrors}
       />
      :
-     
+
       <FormThankYou />
-     
+
      }
     </div>
 )

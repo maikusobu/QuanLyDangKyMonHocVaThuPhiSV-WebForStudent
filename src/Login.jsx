@@ -10,6 +10,7 @@ function LoginComponent() {
 
   const login = async (e) => {
     e.preventDefault();
+    console.log(formData);
     try {
       const response = await axiosClient.post("/auth/login", {
         email: formData.email,
@@ -19,7 +20,7 @@ function LoginComponent() {
         throw new Error("Login failed");
       }
       const data = response.data;
-      localStorage.setItem("token", data.token);
+      localStorage.setItem("token", data.access_token);
       navigate("/");
       setAuthError(false);
     } catch (error) {
@@ -39,20 +40,20 @@ function LoginComponent() {
   return (
     <main className="flex flex-col justify-center items-center h-screen w-screen gap-[30px]">
       <h1 className="text-[22px] font-bold mb-8 uppercase text-center flex flex-col">
-        <span>Hệ thống quản lý học phí và</span>
-        <span>đăng ký học phần</span>
+        <span>Cổng thông tin </span>
+        <span>cho sinh viên</span>
       </h1>
       <div className="card border shadow-xl w-[512px] h-[420px]">
         <div className="card-body flex flex-col items-center">
           <div className="w-full flex justify-center">
             <img src={uitLogo} alt="UIT Logo" className="w-[200px] h-[200px]" />
           </div>
-          <form onSubmit={login} className="card-body flex flex-col gap-[13px]">
+          <form onSubmit={login} className="card-body flex flex-col gap-[13px]  w-full ">
             <input
               type="text"
               name="email"
               placeholder="Email"
-              className="input input-bordered input-md w-full max-w-xs"
+              className="input input-bordered input-md w-full max-w-xs  mx-auto"
               value={formData.email}
               onChange={handleInputChange}
             />
@@ -62,13 +63,9 @@ function LoginComponent() {
               placeholder="Mật khẩu"
               value={formData.password}
               onChange={handleInputChange}
-              className="input input-bordered input-md w-full max-w-xs"
+              className="input input-bordered input-md w-full max-w-xs mx-auto"
             />
-            {authError && (
-              <div className="text-[15px] font-light text-error-color -my-[5px]">
-                Thông tin đăng nhập không hợp lệ, vui lòng thử lại:
-              </div>
-            )}
+
             <button
               type="submit"
               className="btn btn-wide bg-secondary-400 text-base-white hover:bg-light-font-color p-4 w-1/2 mx-auto rounded-lg"
@@ -76,6 +73,11 @@ function LoginComponent() {
               Đăng nhập
             </button>
           </form>
+          { authError && (
+              <div className="text-[15px] font-light text-error-color -my-[5px]">
+                Thông tin đăng nhập không hợp lệ, vui lòng thử lại:
+              </div>
+          )}
         </div>
       </div>
     </main>

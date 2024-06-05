@@ -20,9 +20,6 @@ axiosClient.interceptors.request.use((config) => {
 });
 
 axiosClient.interceptors.response.use((response) => {
-  if (response && response.data) {
-    return response.data;
-  }
   if (response.status === 401) {
    window.location.href = '/login';
   }
