@@ -6,7 +6,9 @@ import Form from './Form';
 import FormThankYou from './FormThankYou';
 import User from "./User";
 import useAuth from './useAuth';
-
+import axiosClient from "./api/axiosClient.js";
+import {useNavigate} from "react-router-dom";
+import Loading from "./Loading";
 function App() {
   const [formData, setFormData] = useState({
     cardNumber: '',
@@ -28,14 +30,32 @@ function App() {
 
   const [formattedCardNumber, setFormattedCardNumber] = useState('');
   const [formSubmitted, setFormSubmitted] = useState(false);
-  const id = useAuth();
+  const [user, setUser] = useState(null);
+  const navigate = useNavigate();
+  const {id, isLoaded, handleLoaded } = useAuth();
 
   useEffect(() => {
     setFormattedCardNumber(prevFormat => {
       return formData.cardNumber.replace(/\s?/g, '').replace(/(\d{4})/g, '$1 ').trim();
     });
   }, [formData.cardNumber]);
-
+  useEffect(() => {
+    let isMounted = true;
+    const fetchUser = async () => {
+      try {
+        const response = await axiosClient.get(`/student/${id}`);
+        if (isMounted) {
+          setUser(response.data);
+        }
+      } catch (error) {
+        navigate("/login")
+      }
+    };
+    fetchUser().then(r => handleLoaded(true));
+    return () => {
+      isMounted = false;
+    };
+  }, [id]);
   const containsOnlyNumbers = (str) => {
     const removedSpaces = str.replace(/\s/g, '');
     return /^\d+$/.test(removedSpaces);
@@ -113,6 +133,9 @@ function App() {
     setFormErrors(validate(formData));
     setFormSubmitted(true);
   };
+  if (!isLoaded) {
+    return <Loading />;
+  }
 
   return (
       <div className="App h-full w-full flex flex-col items-center lg:flex-row">
@@ -120,7 +143,7 @@ function App() {
             formattedCardNumber={formattedCardNumber}
             formData={formData}
         />
-        <User id={id} />
+        <User user={user}/>
         { !noErrors || !formSubmitted ?
             <Form
                 formSubmitted={formSubmitted}
