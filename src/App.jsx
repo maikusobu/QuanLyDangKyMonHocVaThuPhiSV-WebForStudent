@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import './App.css';
 import Valid from 'card-validator';
 import Head from './Head';
+import {getTermYear, resolveTerm} from "./util.js";
 import Form from './Form';
 import FormThankYou from './FormThankYou';
 import User from "./User";
@@ -9,6 +10,7 @@ import useAuth from './useAuth';
 import axiosClient from "./api/axiosClient.js";
 import {useNavigate} from "react-router-dom";
 import Loading from "./Loading";
+import axios from "axios";
 function App() {
   const [formData, setFormData] = useState({
     cardNumber: '',
@@ -30,9 +32,11 @@ function App() {
 
   const [formattedCardNumber, setFormattedCardNumber] = useState('');
   const [formSubmitted, setFormSubmitted] = useState(false);
+  const [tuitionId, setTuitionId] = useState("");
   const [user, setUser] = useState(null);
   const navigate = useNavigate();
   const {id, isLoaded, handleLoaded } = useAuth();
+const termYear = getTermYear();
 
   useEffect(() => {
     setFormattedCardNumber(prevFormat => {
@@ -44,8 +48,14 @@ function App() {
     const fetchUser = async () => {
       try {
         const response = await axiosClient.get(`/student/${id}`);
+        const responseTuition = await axiosClient.get(`/payment/mine?term=${resolveTerm(termYear.term)}&year=${termYear.year}&studentId=${id}`);
+        const user_created = {
+          ...response.data,
+          tuition: responseTuition.data
+        }
+        setTuitionId(responseTuition.data?.id || "")
         if (isMounted) {
-          setUser(response.data);
+          setUser(user_created);
         }
       } catch (error) {
         navigate("/login")
@@ -128,9 +138,14 @@ function App() {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setFormErrors(validate(formData));
+
+    await axiosClient.post("payment", {
+      tuitionId: tuitionId,
+      amount: formData.amount,
+    })
     setFormSubmitted(true);
   };
   if (!isLoaded) {
