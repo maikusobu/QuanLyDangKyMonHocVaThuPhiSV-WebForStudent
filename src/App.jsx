@@ -53,12 +53,14 @@ const termYear = getTermYear();
           ...response.data,
           tuition: responseTuition.data
         }
-        setTuitionId(responseTuition.data?.id || "")
+
         if (isMounted) {
           setUser(user_created);
+          localStorage.setItem("tuitionId", JSON.stringify(responseTuition.data?.id || ""));
         }
       } catch (error) {
-        navigate("/login")
+        console.log(error)
+        // navigate("/login")
       }
     };
     fetchUser().then(r => handleLoaded(true));
@@ -111,6 +113,13 @@ const termYear = getTermYear();
     if (!isNumberLargeThanZero) {
       errors.amount = "Không được thanh toán số tiền nhỏ hơn 0";
     }
+    if (user.tuition) {
+        if (values.amount > user.tuition.totalActual - user.tuition.totalPaid) {
+            errors.amount = "Số tiền thanh toán không được lớn hơn số tiền còn nợ";
+        }
+    } else {
+        errors.amount = "Không có thông tin học phí";
+    }
     if (Valid.number(values.cardNumber).isValid === false && Valid.number(values.cardNumber).isPotentiallyValid === false) {
       errors.cardNumber = "Số thẻ không hợp lệ";
     }
@@ -118,7 +127,7 @@ const termYear = getTermYear();
   };
 
   const noErrors = Object.keys(formErrors).length === 0;
-
+  console.log(tuitionId)
   const handleInput = (e) => {
     const { name, value } = e.target;
     const sanitizedValue = (name === 'amount' && (value === undefined || value === null || value === '')) ? 0 : value;
@@ -143,7 +152,7 @@ const termYear = getTermYear();
     setFormErrors(validate(formData));
 
     await axiosClient.post("payment", {
-      tuitionId: tuitionId,
+      tuitionId: localStorage.getItem("tuitionId"),
       amount: formData.amount,
     })
     setFormSubmitted(true);

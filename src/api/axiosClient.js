@@ -20,10 +20,10 @@ axiosClient.interceptors.request.use((config) => {
 });
 
 axiosClient.interceptors.response.use((response) => {
-  if (response.status === 401) {
-      console.log('Unauthorized');
-   window.location.href = '/login';
-  }
+  // if (response.status === 401) {
+  //     console.log('Unauthorized');
+  //  window.location.href = '/login';
+  // }
   return response;
 });
 
